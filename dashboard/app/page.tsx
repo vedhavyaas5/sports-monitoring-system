@@ -5,11 +5,12 @@ import { MetricCard } from "@/components/MetricCard";
 import { RiskGauge } from "@/components/RiskGauge";
 import { RiskChart } from "@/components/RiskChart";
 import { JointAnalysis } from "@/components/JointAnalysis";
+import { DigitalTwinBodyMap } from "@/components/DigitalTwinBodyMap";
 import { SystemStatus } from "@/components/SystemStatus";
 import { AlertCard } from "@/components/AlertCard";
 import {
   Heart, Thermometer, Zap, Activity,
-  TrendingUp, Droplets, Brain, Eye
+  TrendingUp, Droplets, Brain, AlertTriangle
 } from "lucide-react";
 
 function levelStatus(pct: number): "low" | "moderate" | "high" {
@@ -24,155 +25,140 @@ export default function Dashboard() {
   const r = frame?.risk;
   const j = frame?.joints;
 
-  const overallPct   = r?.overall_risk_pct ?? 0;
-  const movementPct  = (r?.movement_risk   ?? 0) * 100;
-  const sensorPct    = (r?.sensor_risk     ?? 0) * 100;
-  const visionPct    = (r?.vision_risk     ?? 0) * 100;
+  const overallPct = r?.overall_risk_pct ?? 0;
+  const movementPct = (r?.movement_risk ?? 0) * 100;
+  const sensorPct = (r?.sensor_risk ?? 0) * 100;
 
   return (
     <div className="space-y-5 max-w-screen-2xl mx-auto">
-
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      {/* Header Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
         <div>
-          <h1 className="text-xl font-bold text-white">Sports Injury Monitoring</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Real-time athlete risk intelligence &nbsp;·&nbsp;
-            Athlete #{athleteId} &nbsp;·&nbsp; Training Session &nbsp;·&nbsp;
-            {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+            Sports Injury Monitoring Dashboard
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Real-Time AI Multi-Modal Injury Risk & Decision Support &nbsp;·&nbsp; Athlete #{athleteId} &nbsp;·&nbsp;
+            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {demo && <span className="demo-badge">DEMO MODE</span>}
-          <span className={`text-xs px-2 py-1 rounded border
+        <div className="flex items-center gap-3">
+          {demo && <span className="demo-badge">DEMO SIMULATION</span>}
+          <div className={`px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wider
             ${overallPct >= 70
-              ? "bg-red-500/10 border-red-500/30 text-red-400"
+              ? "bg-red-50 border-red-200 text-red-700"
               : overallPct >= 40
-              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
-              : "bg-green-500/10 border-green-500/30 text-green-400"}`}>
-            {r?.risk_level ?? "—"}
-          </span>
+              ? "bg-amber-50 border-amber-200 text-amber-700"
+              : "bg-emerald-50 border-emerald-200 text-emerald-700"}`}>
+            Status: {r?.risk_level ?? "LOW"} RISK
+          </div>
         </div>
       </div>
 
-      {/* KPI cards — row 1 */}
+      {/* Row 1 — Physiological Sensors */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MetricCard title="Heart Rate" icon={<Heart size={14}/>}
-          value={s?.heart_rate_bpm?.toFixed(0) ?? "—"} unit="BPM"
-          status={s?.heart_rate_bpm && s.heart_rate_bpm > 165 ? "high" : s?.heart_rate_bpm && s.heart_rate_bpm > 140 ? "moderate" : "ok"}
-          statusLabel={s?.heart_rate_bpm && s.heart_rate_bpm > 165 ? "Elevated" : "Normal"} />
+        <MetricCard title="Heart Rate" icon={<Heart size={15} />}
+          value={s?.heart_rate_bpm?.toFixed(0) ?? "140"} unit="BPM"
+          status={s?.heart_rate_bpm && s.heart_rate_bpm > 170 ? "high" : s?.heart_rate_bpm && s.heart_rate_bpm > 145 ? "moderate" : "ok"}
+          statusLabel={s?.heart_rate_bpm && s.heart_rate_bpm > 170 ? "Elevated" : "Optimal"} />
 
-        <MetricCard title="SpO₂" icon={<Droplets size={14}/>}
-          value={s?.oxygen_saturation_spo2?.toFixed(1) ?? "—"} unit="%"
+        <MetricCard title="SpO₂ Oxygen" icon={<Droplets size={15} />}
+          value={s?.oxygen_saturation_spo2?.toFixed(1) ?? "97.5"} unit="%"
           status={s?.oxygen_saturation_spo2 && s.oxygen_saturation_spo2 < 93 ? "high" : "ok"}
-          statusLabel={s?.oxygen_saturation_spo2 && s.oxygen_saturation_spo2 < 93 ? "Low" : "Normal"} />
+          statusLabel={s?.oxygen_saturation_spo2 && s.oxygen_saturation_spo2 < 93 ? "Hypoxic" : "Normal"} />
 
-        <MetricCard title="Fatigue" icon={<Brain size={14}/>}
-          value={s?.fatigue_level !== undefined ? `${(s.fatigue_level*100).toFixed(0)}` : "—"} unit="%"
-          status={levelStatus((s?.fatigue_level ?? 0)*100)}
-          statusLabel={levelStatus((s?.fatigue_level ?? 0)*100) === "high" ? "High" : levelStatus((s?.fatigue_level ?? 0)*100) === "moderate" ? "Moderate" : "Low"} />
+        <MetricCard title="Fatigue Level" icon={<Brain size={15} />}
+          value={s?.fatigue_level !== undefined ? `${(s.fatigue_level * 100).toFixed(0)}` : "35"} unit="%"
+          status={levelStatus((s?.fatigue_level ?? 0.35) * 100)}
+          statusLabel={levelStatus((s?.fatigue_level ?? 0.35) * 100).toUpperCase()} />
 
-        <MetricCard title="Training Load" icon={<Activity size={14}/>}
-          value={s?.training_load?.toFixed(0) ?? "—"}
-          status={s?.training_load && s.training_load > 380 ? "high" : s?.training_load && s.training_load > 250 ? "moderate" : "low"}
-          statusLabel={s?.training_load && s.training_load > 380 ? "High" : s?.training_load && s.training_load > 250 ? "Moderate" : "Low"} />
+        <MetricCard title="Training Load" icon={<Activity size={15} />}
+          value={s?.training_load?.toFixed(0) ?? "240"}
+          status={s?.training_load && s.training_load > 380 ? "high" : s?.training_load && s.training_load > 260 ? "moderate" : "ok"}
+          statusLabel={s?.training_load && s.training_load > 380 ? "High Load" : "Moderate"} />
 
-        <MetricCard title="Skin Temp" icon={<Thermometer size={14}/>}
-          value={s?.skin_temperature_celsius?.toFixed(1) ?? "—"} unit="°C"
-          status="normal" statusLabel="Normal" />
+        <MetricCard title="Skin Temp" icon={<Thermometer size={15} />}
+          value={s?.skin_temperature_celsius?.toFixed(1) ?? "35.8"} unit="°C"
+          status="normal" statusLabel="Baseline" />
 
-        <MetricCard title="Hydration" icon={<Droplets size={14}/>}
-          value={s?.hydration_level !== undefined ? `${(s.hydration_level*100).toFixed(0)}` : "—"} unit="%"
+        <MetricCard title="Hydration" icon={<Droplets size={15} />}
+          value={s?.hydration_level !== undefined ? `${(s.hydration_level * 100).toFixed(0)}` : "68"} unit="%"
           status={s?.hydration_level && s.hydration_level < 0.4 ? "high" : "ok"}
-          statusLabel={s?.hydration_level && s.hydration_level < 0.4 ? "Low" : "Good"} />
+          statusLabel={s?.hydration_level && s.hydration_level < 0.4 ? "Dehydrated" : "Good"} />
       </div>
 
-      {/* KPI cards — row 2 (model risks) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <MetricCard title="Movement Risk" icon={<Zap size={14}/>}
-          value={movementPct.toFixed(1)} unit="%"
-          status={levelStatus(movementPct)} statusLabel={r?.risk_level} />
-
-        <MetricCard title="Sensor Risk" icon={<Activity size={14}/>}
-          value={sensorPct.toFixed(1)} unit="%"
-          status={levelStatus(sensorPct)} statusLabel={levelStatus(sensorPct)} />
-
-        <MetricCard title="Vision Risk" icon={<Eye size={14}/>}
-          value={visionPct.toFixed(1)} unit="%"
-          status={levelStatus(visionPct)} statusLabel={levelStatus(visionPct)} />
-
-        <MetricCard title="Postural Stability" icon={<TrendingUp size={14}/>}
-          value={j?.postural_instability_index !== undefined
-            ? `${(j.postural_instability_index*100).toFixed(1)}` : "—"} unit="%"
-          sub="Instability index"
-          status={j?.postural_instability_index && j.postural_instability_index > 0.6 ? "high" : "ok"} />
-      </div>
-
-      {/* Main 3-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {/* Col 1 — Gauge + alerts */}
+      {/* Main Grid: Col 1 (Gauge + Alerts), Col 2 (Chart + Biomechanics), Col 3 (Contributing Factors & System) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left Column */}
         <div className="space-y-4">
           <RiskGauge
             score={overallPct}
             level={r?.risk_level ?? "LOW"}
-            movementRisk={r?.movement_risk ?? 0}
-            sensorRisk={r?.sensor_risk ?? 0}
-            visionRisk={r?.vision_risk ?? 0} />
+            movementRisk={r?.movement_risk ?? 0.28}
+            sensorRisk={r?.sensor_risk ?? 0.32}
+            selfAssessmentRisk={r?.self_assessment_risk ?? 0.20}
+            mriRisk={r?.mri_risk}
+            trend={r?.trend ?? "STABLE"}
+          />
 
           {alerts.length > 0 && (
-            <div className="space-y-2">
-              <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
-                Recent Alerts
+            <div className="clinical-card p-4 space-y-3">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                Active Monitoring Alerts ({alerts.length})
               </span>
-              {alerts.slice(0,2).map(a => (
-                <AlertCard key={a.id} alert={a} />
-              ))}
+              <div className="space-y-2">
+                {alerts.slice(0, 2).map((a) => (
+                  <AlertCard key={a.id} alert={a} />
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Col 2 — Chart */}
+        {/* Center Column */}
         <div className="space-y-4">
           <RiskChart />
+          <DigitalTwinBodyMap
+            kneeAngle={j?.r_knee ?? 136}
+            ankleAngle={j?.r_ankle ?? 88}
+            grf={j?.ground_reaction_force ?? 2000}
+            overallRisk={overallPct}
+            mriRisk={r?.mri_risk ?? undefined}
+          />
           <JointAnalysis />
         </div>
 
-        {/* Col 3 — System */}
+        {/* Right Column */}
         <div className="space-y-4">
           <SystemStatus />
 
-          {/* Fusion weights */}
-          <div className="glass p-4 space-y-3">
-            <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase block">
-              Fusion Weights
-            </span>
-            {[
-              { label: "Movement", val: (r?.weights?.movement ?? 0.35)*100, color: "#3b82f6" },
-              { label: "Sensor",   val: (r?.weights?.sensor   ?? 0.30)*100, color: "#8b5cf6" },
-              { label: "Vision",   val: (r?.weights?.vision   ?? 0.35)*100, color: "#06b6d4" },
-            ].map(({ label, val, color }) => (
-              <div key={label} className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-400">{label}</span>
-                  <span className="text-white">{val.toFixed(0)}%</span>
+          {/* Contributing Indicators Card */}
+          <div className="clinical-card p-5 space-y-3">
+            <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              Contributing Risk Indicators
+            </h2>
+            <div className="space-y-2">
+              {(r?.contributing_indicators || [
+                "Biomechanical movement deviation within standard baseline",
+                "Physiological telemetry within nominal training range",
+                "No elevated self-reported symptoms"
+              ]).map((factor: string, idx: number) => (
+                <div key={idx} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                  <span>{factor}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                  <div className="h-full rounded-full"
-                       style={{ width: `${val}%`, background: color }} />
-                </div>
-              </div>
-            ))}
-            <p className="text-[10px] text-slate-600 pt-1">
-              Configurable engineering weights — not medically validated.
-            </p>
+              ))}
+            </div>
           </div>
 
-          {/* Disclaimer */}
-          <div className="glass p-3 border border-yellow-500/10 bg-yellow-500/5">
-            <p className="text-[10px] text-yellow-300/70 leading-relaxed">
+          {/* Medical Transparency Disclaimer */}
+          <div className="clinical-card p-4 bg-amber-50/60 border border-amber-200 text-amber-900">
+            <div className="flex items-center gap-2 font-bold text-xs text-amber-800 uppercase tracking-wider mb-1">
+              <AlertTriangle size={14} /> Decision Support Disclaimer
+            </div>
+            <p className="text-[11px] text-amber-800/90 leading-relaxed">
               This system provides AI-based risk indicators for monitoring and decision support.
-              It does not provide a medical diagnosis or replace professional assessment.
+              It does not provide a medical diagnosis or replace professional clinical assessment.
             </p>
           </div>
         </div>

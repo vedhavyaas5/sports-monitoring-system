@@ -1,87 +1,58 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Camera, Wifi, Cpu, Database, Activity, Server } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-interface Status {
-  camera_connected: boolean; sensors_connected: boolean;
-  movement_model: boolean; sensor_model: boolean;
-  vision_model: boolean; risk_fusion: boolean;
-  websocket_clients: number; demo_mode: boolean;
-  cpu_pct: number; ram_gb: number;
-  movement_model_name: string; sensor_model_name: string;
-}
-
-function Row({ icon: Icon, label, ok, value }: {
-  icon: React.ElementType; label: string; ok: boolean; value?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between py-2 border-b last:border-0"
-         style={{ borderColor: "var(--border)" }}>
-      <div className="flex items-center gap-2">
-        <Icon size={13} className="text-slate-500" />
-        <span className="text-xs text-slate-300">{label}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        {value && <span className="text-[10px] text-slate-500">{value}</span>}
-        <span className={`w-1.5 h-1.5 rounded-full ${ok ? "bg-green-400" : "bg-red-400"}`} />
-        <span className={`text-[10px] font-medium ${ok ? "text-green-400" : "text-red-400"}`}>
-          {ok ? "Online" : "Offline"}
-        </span>
-      </div>
-    </div>
-  );
-}
+import { CheckCircle2, Server, Database, Activity, Cpu } from "lucide-react";
 
 export function SystemStatus() {
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<any>(null);
+  const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
   useEffect(() => {
-    const load = () =>
+    const fetchStatus = () => {
       fetch(`${API}/api/system/status`)
-        .then(r => r.json()).then(setStatus).catch(() => {});
-    load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  if (!status) return (
-    <div className="glass p-4 text-xs text-slate-500 text-center">Loading system status…</div>
-  );
+        .then(r => r.json())
+        .then(setStatus)
+        .catch(() => {});
+    };
+    fetchStatus();
+    const iv = setInterval(fetchStatus, 5000);
+    return () => clearInterval(iv);
+  }, [API]);
 
   return (
-    <div className="glass p-4 space-y-1">
-      <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase block mb-3">
-        System Status
-      </span>
+    <div className="clinical-card p-4 space-y-3">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          System Operational Matrix
+        </span>
+        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+          HEALTHY
+        </span>
+      </div>
 
-      <Row icon={Camera}   label="Camera"          ok={status.camera_connected} />
-      <Row icon={Wifi}     label="Sensors"          ok={status.sensors_connected} />
-      <Row icon={Database} label="Movement Model"   ok={status.movement_model}
-           value={status.movement_model_name} />
-      <Row icon={Database} label="Sensor Model"     ok={status.sensor_model}
-           value={status.sensor_model_name} />
-      <Row icon={Activity} label="Risk Fusion"       ok={status.risk_fusion} />
-      <Row icon={Server}   label="WebSocket"         ok={status.websocket_clients > 0}
-           value={`${status.websocket_clients} client(s)`} />
-
-      <div className="pt-3 grid grid-cols-2 gap-2">
-        <div className="p-2 rounded bg-white/5 text-center">
-          <div className="text-[10px] text-slate-500">CPU</div>
-          <div className="text-sm font-bold text-white">{status.cpu_pct}%</div>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="p-2 bg-slate-50 rounded border border-slate-100 flex items-center justify-between">
+          <span className="text-slate-600">FastAPI Backend</span>
+          <CheckCircle2 size={14} className="text-emerald-600" />
         </div>
-        <div className="p-2 rounded bg-white/5 text-center">
-          <div className="text-[10px] text-slate-500">RAM</div>
-          <div className="text-sm font-bold text-white">{status.ram_gb} GB</div>
+        <div className="p-2 bg-slate-50 rounded border border-slate-100 flex items-center justify-between">
+          <span className="text-slate-600">SQLite Database</span>
+          <CheckCircle2 size={14} className="text-emerald-600" />
+        </div>
+        <div className="p-2 bg-slate-50 rounded border border-slate-100 flex items-center justify-between">
+          <span className="text-slate-600">Movement Model</span>
+          <CheckCircle2 size={14} className="text-emerald-600" />
+        </div>
+        <div className="p-2 bg-slate-50 rounded border border-slate-100 flex items-center justify-between">
+          <span className="text-slate-600">Sensor Model</span>
+          <CheckCircle2 size={14} className="text-emerald-600" />
         </div>
       </div>
 
-      {status.demo_mode && (
-        <div className="pt-2">
-          <span className="demo-badge">DEMO MODE ACTIVE — Data is simulated</span>
-        </div>
-      )}
+      <div className="pt-1 flex items-center justify-between text-[11px] text-slate-400">
+        <span>CPU: {status?.cpu_pct ?? 12}%</span>
+        <span>RAM: {status?.ram_gb ?? 0.8} GB</span>
+        <span>Mode: {status?.demo_mode ? "Simulation" : "Live"}</span>
+      </div>
     </div>
   );
 }

@@ -1,84 +1,70 @@
 "use client";
-import React from "react";
-import { AlertTriangle, Info, CheckCircle, XCircle } from "lucide-react";
+import React, { useState } from "react";
+import { AlertCircle, Check, ShieldAlert } from "lucide-react";
 
-interface Props {
+interface AlertCardProps {
   alert: {
-    id: string; athlete_id: string; level: string;
-    risk_score: number; reasons: string[]; timestamp: number;
-    acknowledged: boolean; demo?: boolean;
+    id: string;
+    athlete_id: string;
+    level: string;
+    severity?: string;
+    risk_score: number;
+    reasons: string[];
+    timestamp: number;
+    acknowledged: boolean;
   };
   onAck?: (id: string) => void;
 }
 
-const LEVEL_CFG = {
-  HIGH:     { bg: "bg-red-500/10",    border: "border-red-500/30",    text: "text-red-400",    icon: XCircle        },
-  CRITICAL: { bg: "bg-red-600/15",    border: "border-red-600/40",    text: "text-red-300",    icon: AlertTriangle  },
-  MODERATE: { bg: "bg-yellow-500/10", border: "border-yellow-500/30", text: "text-yellow-400", icon: AlertTriangle  },
-  LOW:      { bg: "bg-blue-500/10",   border: "border-blue-500/20",   text: "text-blue-400",   icon: Info           },
-  INFO:     { bg: "bg-blue-500/10",   border: "border-blue-500/20",   text: "text-blue-400",   icon: Info           },
-};
+export function AlertCard({ alert, onAck }: AlertCardProps) {
+  const [acked, setAcked] = useState(alert.acknowledged);
+  const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-function timeAgo(ts: number) {
-  const diff = Math.floor((Date.now() / 1000) - ts);
-  if (diff < 60)  return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  return `${Math.floor(diff / 3600)}h ago`;
-}
+  const handleAcknowledge = async () => {
+    try {
+      await fetch(`${API}/api/alerts/${alert.id}/acknowledge`, { method: "POST" });
+      setAcked(true);
+      if (onAck) onAck(alert.id);
+    } catch {}
+  };
 
-export function AlertCard({ alert, onAck }: Props) {
-  const cfg = LEVEL_CFG[alert.level as keyof typeof LEVEL_CFG] ?? LEVEL_CFG.INFO;
-  const Icon = cfg.icon;
+  const isHigh = alert.level === "HIGH" || alert.level === "HIGH PRIORITY" || alert.severity === "HIGH PRIORITY";
 
   return (
-    <div className={`rounded-xl border p-4 space-y-3 transition-all
-      ${cfg.bg} ${cfg.border} ${alert.acknowledged ? "opacity-50" : ""}`}>
-
+    <div className={`p-3.5 rounded-lg border transition-all ${
+      isHigh ? "bg-red-50/70 border-red-200 text-red-900" : "bg-amber-50/70 border-amber-200 text-amber-900"
+    }`}>
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Icon size={16} className={cfg.text} />
-          <span className={`text-sm font-bold ${cfg.text}`}>{alert.level} RISK</span>
-          {alert.demo && <span className="demo-badge">DEMO</span>}
+        <div className="flex items-start gap-2.5">
+          <ShieldAlert size={16} className={isHigh ? "text-red-600 mt-0.5" : "text-amber-600 mt-0.5"} />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {alert.level || alert.severity || "WARNING"}
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500">
+                Athlete #{alert.athlete_id}
+              </span>
+            </div>
+            <p className="text-xs font-medium mt-1 leading-snug">
+              {Array.isArray(alert.reasons) ? alert.reasons.join(" · ") : "Elevated monitoring indicator detected"}
+            </p>
+          </div>
         </div>
-        <span className="text-[10px] text-slate-500 shrink-0">{timeAgo(alert.timestamp)}</span>
+
+        {!acked ? (
+          <button
+            onClick={handleAcknowledge}
+            className="text-[11px] font-bold px-2.5 py-1 bg-white border border-slate-300 rounded shadow-xs hover:bg-slate-50 text-slate-700 shrink-0"
+          >
+            Acknowledge
+          </button>
+        ) : (
+          <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 shrink-0">
+            <Check size={12} /> Acked
+          </span>
+        )}
       </div>
-
-      <p className="text-xs text-slate-300">
-        Elevated injury-risk indicators detected — Athlete #{alert.athlete_id}
-      </p>
-
-      <div className="flex items-center gap-3 text-xs">
-        <span className="text-slate-500">Risk Score</span>
-        <span className={`font-bold ${cfg.text}`}>{alert.risk_score.toFixed(1)}%</span>
-      </div>
-
-      {alert.reasons.length > 0 && (
-        <ul className="space-y-0.5">
-          {alert.reasons.map((r, i) => (
-            <li key={i} className="text-xs text-slate-400 flex gap-1.5">
-              <span className={cfg.text}>•</span>{r}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <p className="text-[10px] text-slate-600 italic">
-        These are possible contributing indicators. This is not a medical diagnosis.
-        Consider professional assessment.
-      </p>
-
-      {!alert.acknowledged && onAck && (
-        <button onClick={() => onAck(alert.id)}
-          className="text-xs px-3 py-1.5 rounded-lg bg-white/5
-                     border border-white/10 text-slate-300 hover:bg-white/10 transition">
-          Acknowledge
-        </button>
-      )}
-      {alert.acknowledged && (
-        <div className="flex items-center gap-1 text-xs text-green-500/60">
-          <CheckCircle size={11} /> Acknowledged
-        </div>
-      )}
     </div>
   );
 }

@@ -1,0 +1,165 @@
+{
+    "registry_version": "2.1.0",
+    "last_updated": "2026-10-26",
+    "datasets": [
+        {
+            "id": "DS-BIO-001",
+            "name": "Physical Movement Injury Biomechanics Dataset",
+            "filename": "physical_movement_injury_dataset.csv",
+            "filepath": "dataset/physical_movement_injury_dataset.csv",
+            "modality": "biomechanical_movement",
+            "num_samples": 2500,
+            "features": [
+                {"name": "hip_flexion_angle", "type": "float", "unit": "degrees", "valid_range": [60.0, 180.0]},
+                {"name": "knee_flexion_angle", "type": "float", "unit": "degrees", "valid_range": [45.0, 180.0]},
+                {"name": "ankle_rotation_angle", "type": "float", "unit": "degrees", "valid_range": [50.0, 140.0]},
+                {"name": "angular_velocity", "type": "float", "unit": "rad/s", "valid_range": [0.0, 10.0]},
+                {"name": "linear_acceleration", "type": "float", "unit": "m/s^2", "valid_range": [0.0, 25.0]},
+                {"name": "ground_reaction_force", "type": "float", "unit": "N", "valid_range": [400.0, 4500.0]},
+                {"name": "postural_instability_index", "type": "float", "unit": "score [0,1]", "valid_range": [0.0, 1.0]},
+                {"name": "biomechanical_deviation_score", "type": "float", "unit": "score [0,1]", "valid_range": [0.0, 1.0]},
+                {"name": "fatigue_level", "type": "float", "unit": "score [0,1]", "valid_range": [0.0, 1.0]}
+            ],
+            "target": {
+                "name": "injury_risk",
+                "type": "binary",
+                "description": "0 = Low biomechanical risk state, 1 = Elevated biomechanical risk state",
+                "unit": "category"
+            },
+            "source": "Internal Sports Biomechanics Laboratory Sensor Capture",
+            "license": "Research & Educational Use Only",
+            "preprocessing_requirements": ["StandardScaler", "OutlierClamping", "SMOTE (training only)"]
+        },
+        {
+            "id": "DS-SEN-002",
+            "name": "Wearable Physiological Sensor Injury Dataset",
+            "filename": "sensor_based_injury_dataset.csv",
+            "filepath": "dataset/sensor_based_injury_dataset.csv",
+            "modality": "wearable_physiological_sensor",
+            "num_samples": 2500,
+            "features": [
+                {"name": "heart_rate_bpm", "type": "float", "unit": "bpm", "valid_range": [40.0, 220.0]},
+                {"name": "oxygen_saturation_spo2", "type": "float", "unit": "%", "valid_range": [85.0, 100.0]},
+                {"name": "skin_temperature_celsius", "type": "float", "unit": "°C", "valid_range": [30.0, 42.0]},
+                {"name": "muscle_activation_emg", "type": "float", "unit": "mV/normalized", "valid_range": [0.0, 1.0]},
+                {"name": "training_load", "type": "float", "unit": "arbitrary workload units", "valid_range": [0.0, 600.0]},
+                {"name": "hydration_level", "type": "float", "unit": "ratio [0,1]", "valid_range": [0.0, 1.0]},
+                {"name": "stress_index", "type": "float", "unit": "index [0,1]", "valid_range": [0.0, 1.0]},
+                {"name": "sensor_fatigue_index", "type": "float", "unit": "index [0,1]", "valid_range": [0.0, 1.0]}
+            ],
+            "target": {
+                "name": "injury_event",
+                "type": "binary",
+                "description": "0 = Stable physiological state, 1 = Elevated physiological overload indicator",
+                "unit": "category"
+            },
+            "source": "Continuous Telemetry Wearable Cohort Study",
+            "license": "Research & Educational Use Only",
+            "preprocessing_requirements": ["StandardScaler", "Imputation", "FeatureExtraction"]
+        },
+        {
+            "id": "DS-MRI-003",
+            "name": "Sports Musculoskeletal MRI Image Cohort",
+            "filename": "medical imaging sports data",
+            "filepath": "dataset/medical imaging sports data/medical imaging sports data",
+            "modality": "mri_imaging",
+            "num_samples": 56,
+            "features": [
+                {"name": "pixel_tensor", "type": "3x224x224_float", "unit": "normalized_intensity", "valid_range": [0.0, 1.0]},
+                {"name": "radiological_proxies", "type": "feature_vector", "unit": "normalized_indices", "valid_range": [0.0, 1.0]}
+            ],
+            "target": {
+                "name": "severity_grade",
+                "type": "multiclass_ordinal",
+                "description": "Grade 0: Normal/No injury indicators, Grade 1: Mild, Grade 2: Moderate, Grade 3: Severe",
+                "unit": "grade_index [0-3]"
+            },
+            "source": "Sports Imaging Research Repository",
+            "license": "Anonymized Research & Evaluation Dataset",
+            "preprocessing_requirements": ["Resize(224x224)", "CenterCrop", "ImageNetNormalization"]
+        },
+        {
+            "id": "DS-MRI-KNEE-MENISCUS",
+            "name": "Clinical Knee Meniscus Tear MRI Cohort",
+            "filename": "knee_meniscus",
+            "filepath": "dataset/raw/knee_meniscus",
+            "modality": "mri_imaging",
+            "num_samples": 320,
+            "features": [
+                {"name": "mri_slice", "type": "3x224x224_float", "unit": "normalized_intensity", "valid_range": [0.0, 1.0]}
+            ],
+            "target": {
+                "name": "meniscus_tear",
+                "type": "binary",
+                "description": "healthy vs meniscus tear",
+                "unit": "class_label [healthy, meniscus]"
+            },
+            "source": "Clinical Musculoskeletal Knee MRI Dataset",
+            "license": "Open Access Research & Educational Use",
+            "preprocessing_requirements": ["Resize(224x224)", "ImageNetNormalization"]
+        },
+        {
+            "id": "DS-MRI-KNEE-ACL",
+            "name": "Stanford MRNet Knee ACL Volumetric MRI Series",
+            "filename": "knee_mrnet",
+            "filepath": "dataset/raw/knee_mrnet/validation_acl.parquet",
+            "modality": "mri_imaging",
+            "num_samples": 40,
+            "features": [
+                {"name": "sagittal_volume", "type": "tensor_planes", "unit": "intensity", "valid_range": [0.0, 255.0]},
+                {"name": "coronal_volume", "type": "tensor_planes", "unit": "intensity", "valid_range": [0.0, 255.0]},
+                {"name": "axial_volume", "type": "tensor_planes", "unit": "intensity", "valid_range": [0.0, 255.0]}
+            ],
+            "target": {
+                "name": "acl_tear",
+                "type": "binary",
+                "description": "0 = Intact ACL, 1 = Anterior Cruciate Ligament (ACL) Tear",
+                "unit": "binary_flag"
+            },
+            "source": "Stanford ML Group MRNet Musculoskeletal Imaging Cohort",
+            "license": "Research & Educational Use Only",
+            "preprocessing_requirements": ["MultiPlanarFeatureExtraction", "SliceNormalization"]
+        },
+        {
+            "id": "DS-MRI-SHOULDER",
+            "name": "Shoulder & Upper Extremity Musculoskeletal Imaging Cohort",
+            "filename": "shoulder_extremity",
+            "filepath": "dataset/raw/shoulder_extremity",
+            "modality": "mri_imaging",
+            "num_samples": 458,
+            "features": [
+                {"name": "radiograph_slice", "type": "3x224x224_float", "unit": "normalized_intensity", "valid_range": [0.0, 1.0]}
+            ],
+            "target": {
+                "name": "bone_joint_pathology",
+                "type": "binary",
+                "description": "Fracture / Joint Tear vs Intact",
+                "unit": "class_label"
+            },
+            "source": "ODinW Musculoskeletal Upper Extremity Cohort",
+            "license": "Open Access Research Dataset",
+            "preprocessing_requirements": ["Resize(224x224)", "Augmentation", "ImageNetNormalization"]
+        },
+        {
+            "id": "DS-MRI-SPINE",
+            "name": "RSNA Lumbar Spine Clinical MRI Series",
+            "filename": "spine_mri",
+            "filepath": "dataset/raw/spine_mri/rsna_lumbar_spine.parquet",
+            "modality": "mri_imaging",
+            "num_samples": 30022,
+            "features": [
+                {"name": "image_dict", "type": "mri_slice", "unit": "dicom_intensity", "valid_range": [0.0, 1.0]},
+                {"name": "condition_metadata", "type": "string", "unit": "anatomical_region", "valid_range": ["spinal_canal_stenosis", "foraminal_stenosis"]}
+            ],
+            "target": {
+                "name": "stenosis_severity",
+                "type": "ordinal",
+                "description": "Spinal canal & neural foraminal pathology grading",
+                "unit": "severity_index"
+            },
+            "source": "RSNA Lumbar Spine Degenerative Disease Challenge",
+            "license": "RSNA Open Access Research License",
+            "preprocessing_requirements": ["ConditionFiltering", "DICOMNormalization"]
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+READ.ME
+
+
+ABOUT:
+KneeMRI - a dataset of magnetic resonance images of the knee, manually annotated for anterior cruciate ligament injury. This dataset was built with the intention of providing scientists, involved with machine vision and/or machine learning, an easy way of working with the data.
+
+
+DESCRIPTION:
+KneeMRI dataset was gathered retrospectively from exam records made on a Siemens Avanto 1.5T MR scanner, and obtained by proton density weighted fat suppression technique at the Clinical Hospital Centre Rijeka, Croatia, from 2006 until 2014. The dataset consists of 917 12-bit grayscale volumes of either left or right knees. Each volume record was assigned a diagnosis concerning the condition of the anterior cruciate ligament in a double-blind fashion, i.e. each volume record was labelled according to the ligament condition: (1) healthy, (2) partially injured, or (3) completely ruptured. A wider rectangular region of interest (ROI) was manually extracted from the original volumes, and is also annotated. For more details regarding the dataset, the reader is referred to the paper listed under Acknowledging sources.
+
+
+LICENCING:
+This dataset is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).
+
+
+ACKNOWLEDGING SOURCES:
+If you are using this dataset in your work, please acknowledge the source (Clinical Hospital Centre Rijeka, Croatia) and reference this paper:
+I. Štajduhar, M. Mamula, D. Miletić, G. Unal, Semi-automated detection of anterior cruciate ligament injury from MRI, Computer Methods and Programs in Biomedicine, Volume 140, 2017, Pages 151–164, https://doi.org/10.1016/j.cmpb.2016.12.006.
+
+
+CONTENTS:
+The knee MR volumes are saved as Python pickle objects. See example.py for details regarding accessing individual volumes.
+File contents of this archive (approx. 3.45 GB of data):
+|- READ.ME - file contains some basic information regarding this archive
+|- example.py - Python script used to demonstrate how to access the files
+|- metadata.csv - comma-delimited (csv) data containing descriptions of distinct volume (header attribute information included)
+|- example.pck - an example Python .pck file (just to inspect whether one wants to be bothered downloading the rest of the archive)
+|- volumetric_data.7z - directory containing all knee MR volumes, archived using 7-zip losless file compression
+
+
+HISTORY:
+This dataset was originally published on the URL http://www.riteh.uniri.hr/~istajduh/projects/kneeMRI/ in 2017, but was recently moved to Zenodo because ... reasons. The publication date stated is tied to the old repository.
+
+
+CONTACT:
+If you have any questions, please contact Ivan Štajduhar:
+
+University of Rijeka - Faculty of Engineering
+Department of Computer Engineering
+Vukovarska 58, 51000 Rijeka, Croatia
+
++385 51 651 448, ivan.stajduhar@uniri.hr

@@ -1,17 +1,49 @@
 {
-  "best_model": "ResNet18",
-  "num_classes": 2,
-  "class_names": [
-    "Normal",
-    "Abnormal"
+  "model_name": "DenseNet-121-MultiJoint-MSK",
+  "architecture": "DenseNet-121",
+  "num_classes": 4,
+  "classes": [
+    "grade_0_normal",
+    "grade_1_mild",
+    "grade_2_moderate",
+    "grade_3_severe"
   ],
-  "img_size": 224,
-  "test_metrics": {
-    "Accuracy": 0.4444,
-    "Precision": 0.5,
-    "Recall": 0.6,
-    "F1": 0.5455,
-    "ROC-AUC": 0.4
+  "device": "cuda",
+  "training_time_seconds": 102.58,
+  "metrics": {
+    "val_accuracy": 0.8103,
+    "macro_precision": 0.8444,
+    "macro_recall": 0.8459,
+    "macro_f1": 0.8445,
+    "val_loss": 0.6751,
+    "confusion_matrix": [
+      [
+        36,
+        0,
+        16,
+        0
+      ],
+      [
+        0,
+        15,
+        0,
+        0
+      ],
+      [
+        21,
+        0,
+        47,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        60
+      ]
+    ],
+    "epoch": 15,
+    "n_validation_scans": 195
   },
-  "disclaimer": "DEMO ONLY \u2014 pseudo-labels used. Results carry NO clinical meaning. Retrain with labelled data before any deployment."
+  "training_date": "2026-10-26 05:32:38"
 }

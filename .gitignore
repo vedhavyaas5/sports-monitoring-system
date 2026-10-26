@@ -14,6 +14,27 @@ venv/
 .venv/
 env/
 
+# Environment Variables & Secrets (CRITICAL: Never commit API keys)
+.env
+.env.local
+*.env
+*.env.*
+!.env.example
+
+# SQLite Database & temporary WAL files (auto-seeded on startup)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Large dataset raw files and archives (>100MB exceeds GitHub limits)
+*.7z
+*.zip
+*.tar.gz
+*.parquet
+dataset/raw/**/*.7z
+dataset/raw/**/*.parquet
+
 # Jupyter
 .ipynb_checkpoints/
 
@@ -49,6 +70,3 @@ dashboard/.next/
 # Logs
 logs/*.log
 *.log
-
-# Large dataset raw images are tracked (small dataset, 56 webp files)
-# Processed CSVs are tracked for reproducibility

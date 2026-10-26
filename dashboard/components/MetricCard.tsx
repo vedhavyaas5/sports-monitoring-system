@@ -1,71 +1,41 @@
 "use client";
 import React from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-interface Props {
+interface MetricCardProps {
   title: string;
+  icon: React.ReactNode;
   value: string | number;
   unit?: string;
-  status?: "low" | "moderate" | "high" | "ok" | "normal";
-  statusLabel?: string;
-  trend?: "up" | "down" | "stable";
-  trendValue?: string;
-  icon?: React.ReactNode;
   sub?: string;
+  status?: "ok" | "normal" | "low" | "moderate" | "high";
+  statusLabel?: string;
 }
 
-const STATUS_COLOR = {
-  low:      "text-green-400",
-  ok:       "text-green-400",
-  normal:   "text-green-400",
-  moderate: "text-yellow-400",
-  high:     "text-red-400",
-};
-
-const STATUS_DOT = {
-  low:      "bg-green-400",
-  ok:       "bg-green-400",
-  normal:   "bg-green-400",
-  moderate: "bg-yellow-400",
-  high:     "bg-red-400",
-};
-
-export function MetricCard({ title, value, unit, status, statusLabel, trend, trendValue, icon, sub }: Props) {
-  const sc = status ? STATUS_COLOR[status] : "text-slate-400";
-  const sd = status ? STATUS_DOT[status]   : "bg-slate-400";
-
-  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
-  const trendColor = trend === "up" ? "text-red-400" : trend === "down" ? "text-green-400" : "text-slate-400";
+export function MetricCard({ title, icon, value, unit, sub, status = "ok", statusLabel }: MetricCardProps) {
+  let badgeColor = "bg-slate-100 text-slate-700 border-slate-200";
+  if (status === "high") badgeColor = "bg-red-50 text-red-700 border-red-200";
+  else if (status === "moderate") badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
+  else if (status === "ok" || status === "normal" || status === "low") badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
 
   return (
-    <div className="glass p-4 flex flex-col gap-2 hover:border-blue-500/30 transition-all">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
-          {title}
-        </span>
-        {icon && <span className="text-slate-600">{icon}</span>}
+    <div className="clinical-card p-4 flex flex-col justify-between clinical-card-hover">
+      <div className="flex items-center justify-between text-slate-500 mb-2">
+        <span className="text-xs font-semibold uppercase tracking-wider">{title}</span>
+        <div className="w-7 h-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
+          {icon}
+        </div>
       </div>
-
-      <div className="flex items-end gap-1.5">
-        <span className="text-2xl font-bold text-white leading-none">{value}</span>
-        {unit && <span className="text-sm text-slate-500 mb-0.5">{unit}</span>}
+      <div className="flex items-baseline gap-1.5 mt-1">
+        <span className="text-2xl font-bold text-slate-900 tracking-tight">{value}</span>
+        {unit && <span className="text-xs font-semibold text-slate-400">{unit}</span>}
       </div>
-
-      {sub && <span className="text-xs text-slate-500">{sub}</span>}
-
-      <div className="flex items-center justify-between mt-auto">
-        {status && (
-          <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${sd}`} />
-            <span className={`text-xs font-medium ${sc}`}>{statusLabel ?? status}</span>
-          </div>
-        )}
-        {trend && trendValue && (
-          <div className={`flex items-center gap-1 text-xs ${trendColor}`}>
-            <TrendIcon size={12} />
-            <span>{trendValue}</span>
-          </div>
-        )}
+      <div className="mt-3 flex items-center justify-between text-xs">
+        {statusLabel ? (
+          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeColor}`}>
+            {statusLabel}
+          </span>
+        ) : <span />}
+        {sub && <span className="text-slate-400 text-[11px]">{sub}</span>}
       </div>
     </div>
   );

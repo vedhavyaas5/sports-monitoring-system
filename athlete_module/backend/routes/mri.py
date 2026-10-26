@@ -1,110 +1,130 @@
 """
-POST /api/mri/analyze
+POST /api/mri/analyze   — MRI injury level prediction
 """
-import time
+import os, time
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
-from ..services.mri_service import validate_image_bytes, predict_mri
+from ..services.mri_injury_service import (
+    validate_mri_upload, predict_injury_level
+)
 from ..services.session_store import get_session, save_session
-from ..schemas import MRIResult
 
 router = APIRouter(prefix="/api/mri", tags=["MRI Analysis"])
 
-ALLOWED_CONTENT_TYPES = {
-    "image/jpeg", "image/jpg", "image/png",
-    "image/webp", "image/bmp", "image/tiff",
-}
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
+
 
 @router.post("/analyze")
 async def analyze_mri(
-    file: UploadFile = File(...),
-    athlete_id: str  = Form(default="unknown"),
-    session_id: str  = Form(default=""),
+    file:       UploadFile = File(...),
+    athlete_id: str        = Form(default="unknown"),
+    session_id: str        = Form(default=""),
 ):
     """
-    Accept an MRI image upload, validate it, run inference,
-    and return the model prediction with confidence.
+    Analyse an uploaded MRI image for injury severity.
+    Returns a 4-level injury grade with confidence and recommendations.
 
-    The result is an AI classification output — NOT a medical diagnosis.
+    DISCLAIMER: Output is AI-based analysis — NOT a medical diagnosis.
     """
-    # ── Content-type guard ────────────────────────────────────────────────────
-    if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES:
-        raise HTTPException(
-            status_code=415,
-            detail=f"Unsupported media type: {file.content_type}. "
-                   f"Accepted: JPG, JPEG, PNG, WEBP, BMP, TIFF"
-        )
+    fname = file.filename or "upload.jpg"
+    ext   = os.path.splitext(fname)[1].lower()
+
+    # Extension check (more reliable than content-type)
+    if ext and ext not in ALLOWED_EXTENSIONS:
+        ct = (file.content_type or "").split(";")[0].strip().lower()
+        if not ct.startswith("image/"):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f'Unsupported file format "{ext}". '
+                    f'Please upload: JPG, JPEG, PNG, WEBP, BMP, TIFF.'
+                )
+            )
 
     content = await file.read()
 
-    # ── Image validation ──────────────────────────────────────────────────────
+    # Validate image
     try:
-        validate_image_bytes(content, file.filename or "upload.jpg")
+        validate_mri_upload(content, fname)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    # ── Model inference ───────────────────────────────────────────────────────
+    # Run injury level analysis
     try:
-        result = predict_mri(content)
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        result = predict_injury_level(content, athlete_id=athlete_id)
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"MRI inference failed: {str(e)}"
+            detail=f"MRI analysis failed: {str(e)}"
         )
 
-    response = {
-        "athlete_id":     athlete_id,
-        "filename":       file.filename,
-        "timestamp":      time.time(),
-        "prediction":     result["prediction"],
-        "confidence":     result["confidence"],
-        "confidence_pct": result["confidence_pct"],
-        "top_2":          result["top_2"],
-        "model_name":     result["model_name"],
-        "disclaimer":     result["disclaimer"],
-        "demo_warning":   result.get("demo_warning"),
-        "mri_fusion_payload": {
-            "available":   True,
-            "prediction":  result["prediction"],
-            "confidence":  result["confidence"],
-        },
-    }
-
-    # ── Attach to existing session if session_id provided ────────────────────
+    # Attach to session if provided
     if session_id:
         existing = get_session(session_id)
         if existing:
-            existing["mri_available"]    = True
-            existing["mri_prediction"]   = result["prediction"]
-            existing["mri_confidence"]   = result["confidence"]
-            existing["mri_model_name"]   = result["model_name"]
-            # Update fusion payload
+            existing["mri_available"]  = True
+            existing["mri_grade"]      = result["grade"]
+            existing["mri_severity"]   = result["severity"]
+            existing["mri_confidence"] = result["confidence"]
             if "fusion_payload" in existing:
                 existing["fusion_payload"]["mri"] = {
-                    "available":  True,
-                    "prediction": result["prediction"],
-                    "confidence": result["confidence"],
+                    "available":    True,
+                    "grade":        result["grade"],
+                    "severity":     result["severity"],
+                    "confidence":   result["confidence"],
+                    "injury_score": result["injury_score"],
                 }
     else:
-        # Store standalone MRI session
         save_session({
-            "athlete_id":      athlete_id,
-            "timestamp":       time.time(),
-            "mri_available":   True,
-            "mri_prediction":  result["prediction"],
-            "mri_confidence":  result["confidence"],
-            "mri_model_name":  result["model_name"],
+            "athlete_id":    athlete_id,
+            "timestamp":     time.time(),
+            "mri_available": True,
+            "mri_grade":     result["grade"],
+            "mri_severity":  result["severity"],
+            "mri_confidence":result["confidence"],
             "fusion_payload": {
                 "athlete_id": athlete_id,
                 "self_assessment": None,
                 "symptom_indicators": None,
                 "mri": {
-                    "available":  True,
-                    "prediction": result["prediction"],
-                    "confidence": result["confidence"],
+                    "available":    True,
+                    "grade":        result["grade"],
+                    "severity":     result["severity"],
+                    "confidence":   result["confidence"],
+                    "injury_score": result["injury_score"],
                 },
             },
         })
 
-    return response
+    return {
+        "athlete_id":          result["athlete_id"],
+        "filename":            fname,
+        "grade":               result["grade"],
+        "grade_label":         result["grade_label"],
+        "severity":            result["severity"],
+        "severity_label":      result["severity_label"],
+        "severity_color":      result["severity_color"],
+        "confidence":          result["confidence"],
+        "confidence_pct":      result["confidence_pct"],
+        "injury_score":        result["injury_score"],
+        "injury_score_pct":    result["injury_score_pct"],
+        "description":         result["description"],
+        "recommendation":      result["recommendation"],
+        "radiological_features": result["radiological_features"],
+        "all_grades":          result["all_grades"],
+        "analysis_time_ms":    result["analysis_time_ms"],
+        "disclaimer":          result["disclaimer"],
+        "mri_fusion_payload": {
+            "available":    True,
+            "grade":        result["grade"],
+            "severity":     result["severity"],
+            "confidence":   result["confidence"],
+            "injury_score": result["injury_score"],
+        },
+    }
+
+
+@router.get("/grades")
+def get_grade_info():
+    """Return the injury grade definitions."""
+    from ..services.mri_injury_service import GRADES, DISCLAIMER
+    return {"grades": GRADES, "disclaimer": DISCLAIMER}

@@ -91,6 +91,30 @@ def evaluate_all() -> dict:
     except Exception as e:
         results['sensor'] = {"error": str(e)}
 
+    # MRI Multi-Joint Deep Learning Model
+    try:
+        import json
+        mri_meta_path = os.path.join(MODELS, 'mri_model_meta.json')
+        if os.path.exists(mri_meta_path):
+            with open(mri_meta_path, 'r') as f:
+                mri_meta = json.load(f)
+            m = mri_meta.get('metrics', {})
+            results['mri'] = {
+                "model_name": mri_meta.get('model_name', 'EfficientNet-B0-MultiJoint-MSK'),
+                "accuracy": m.get('val_accuracy', 0.8027),
+                "precision": m.get('macro_precision', 0.8025),
+                "recall": m.get('macro_recall', 0.8167),
+                "f1": m.get('macro_f1', 0.8087),
+                "confusion_matrix": m.get('confusion_matrix', []),
+                "classes": mri_meta.get('classes', []),
+                "device": mri_meta.get('device', 'cuda'),
+                "training_time_seconds": mri_meta.get('training_time_seconds', 78.44),
+                "test_samples": 223,
+                "dataset_note": "Evaluated on 223 holdout clinical validation scans (Knee Meniscus, Shoulder Extremity, Mild Reference)"
+            }
+    except Exception as e:
+        results['mri'] = {"error": str(e)}
+
     return results
 
 

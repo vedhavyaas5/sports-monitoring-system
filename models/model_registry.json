@@ -1,0 +1,112 @@
+{
+    "registry_version": "2.0.0",
+    "last_updated": "2026-09-24",
+    "models": {
+        "movement": {
+            "model_name": "RandomForestClassifier_Movement",
+            "model_version": "movement_model_v2.0",
+            "model_file": "movement_model.pkl",
+            "preprocessor_file": "movement_preprocessor.pkl",
+            "algorithm": "RandomForest",
+            "modality": "biomechanical_movement",
+            "training_date": "2026-09-24",
+            "dataset_id": "DS-BIO-001",
+            "input_features": [
+                "hip_flexion_angle",
+                "knee_flexion_angle",
+                "ankle_rotation_angle",
+                "angular_velocity",
+                "linear_acceleration",
+                "ground_reaction_force",
+                "postural_instability_index",
+                "biomechanical_deviation_score",
+                "fatigue_level",
+                "movement_intensity",
+                "biomechanical_risk_index",
+                "movement_asymmetry",
+                "fatigue_grf_interaction"
+            ],
+            "metrics": {
+                "accuracy": 0.892,
+                "precision": 0.884,
+                "recall": 0.896,
+                "f1": 0.89,
+                "roc_auc": 0.941
+            },
+            "calibration": {
+                "calibrated": true,
+                "method": "isotonic",
+                "brier_score": 0.082
+            },
+            "explainability_method": "TreeSHAP"
+        },
+        "sensor": {
+            "model_name": "XGBoostClassifier_Sensor",
+            "model_version": "sensor_model_v2.0",
+            "model_file": "sensor_model.pkl",
+            "preprocessor_file": "sensor_preprocessor.pkl",
+            "algorithm": "XGBoost",
+            "modality": "wearable_physiological_sensor",
+            "training_date": "2026-09-24",
+            "dataset_id": "DS-SEN-002",
+            "input_features": [
+                "heart_rate_bpm",
+                "oxygen_saturation_spo2",
+                "skin_temperature_celsius",
+                "muscle_activation_emg",
+                "training_load",
+                "hydration_level",
+                "stress_index",
+                "sensor_fatigue_index",
+                "fatigue_adjusted_load",
+                "physiological_stress_score",
+                "recovery_index",
+                "cardiovascular_load"
+            ],
+            "metrics": {
+                "accuracy": 0.914,
+                "precision": 0.908,
+                "recall": 0.92,
+                "f1": 0.914,
+                "roc_auc": 0.963
+            },
+            "calibration": {
+                "calibrated": true,
+                "method": "platt_scaling",
+                "brier_score": 0.071
+            },
+            "explainability_method": "TreeSHAP"
+        },
+        "mri": {
+            "model_name": "EfficientNet_B0_Radiological_Head",
+            "model_version": "mri_model_v2.0",
+            "model_file": "mri_model.pth",
+            "meta_file": "mri_model_meta.json",
+            "algorithm": "EfficientNet-B0 + Radiological Feature Fusion",
+            "modality": "mri_imaging",
+            "training_date": "2026-09-24",
+            "dataset_id": "DS-MRI-003",
+            "metrics": {
+                "accuracy": 0.875,
+                "precision": 0.868,
+                "recall": 0.88,
+                "f1": 0.874,
+                "roc_auc": 0.918
+            },
+            "explainability_method": "Grad-CAM"
+        },
+        "fusion": {
+            "model_name": "Multimodal_Risk_Fusion_Engine",
+            "model_version": "fusion_engine_v2.0",
+            "algorithm": "Configurable Weighted Multi-Source Fusion + EMA",
+            "input_modalities": [
+                "movement",
+                "sensor",
+                "self_assessment",
+                "mri",
+                "temporal_trend"
+            ],
+            "status": "active"
+        }
+    }
+}

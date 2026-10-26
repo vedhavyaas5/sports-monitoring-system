@@ -1,102 +1,120 @@
 "use client";
 import React from "react";
+import { ShieldAlert, TrendingUp } from "lucide-react";
 
-interface Props {
-  score: number;       // 0–100
+export interface RiskGaugeProps {
+  score: number;
   level: string;
   movementRisk: number;
-  sensorRisk:   number;
-  visionRisk:   number;
-  updatedAgo?:  string;
+  sensorRisk: number;
+  visionRisk?: number;
+  selfAssessmentRisk?: number;
+  mriRisk?: number | null;
+  trend?: string;
 }
 
-function levelColor(level: string) {
-  if (level === "HIGH")     return { stroke: "#ef4444", text: "text-red-400",    bg: "bg-red-500/10"    };
-  if (level === "MODERATE") return { stroke: "#f59e0b", text: "text-yellow-400", bg: "bg-yellow-500/10" };
-  return                           { stroke: "#10b981", text: "text-green-400",  bg: "bg-green-500/10"  };
-}
-
-function RiskBar({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
-        <span className="text-white font-medium">{Math.round(value * 100)}%</span>
-      </div>
-      <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-700"
-             style={{ width: `${Math.min(value * 100, 100)}%`, background: color }} />
-      </div>
-    </div>
-  );
-}
-
-export function RiskGauge({ score, level, movementRisk, sensorRisk, visionRisk, updatedAgo }: Props) {
-  const { stroke, text, bg } = levelColor(level);
-
-  // SVG arc gauge
-  const r = 54, cx = 70, cy = 70;
-  const startAngle = -210, totalAngle = 240;
-  const angle = startAngle + (score / 100) * totalAngle;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const arcPath = (a1: number, a2: number) => {
-    const x1 = cx + r * Math.cos(toRad(a1));
-    const y1 = cy + r * Math.sin(toRad(a1));
-    const x2 = cx + r * Math.cos(toRad(a2));
-    const y2 = cy + r * Math.sin(toRad(a2));
-    const large = Math.abs(a2 - a1) > 180 ? 1 : 0;
-    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
-  };
+export function RiskGauge({ score, level, movementRisk, sensorRisk, visionRisk, selfAssessmentRisk = 0, mriRisk, trend = "STABLE" }: RiskGaugeProps) {
+  const normalized = Math.min(Math.max(score, 0), 100);
+  
+  let color = "#10b981";
+  let bgTint = "bg-emerald-50 text-emerald-800 border-emerald-200";
+  if (level === "HIGH" || normalized >= 70) {
+    color = "#ef4444";
+    bgTint = "bg-red-50 text-red-800 border-red-200";
+  } else if (level === "MODERATE" || normalized >= 40) {
+    color = "#f59e0b";
+    bgTint = "bg-amber-50 text-amber-800 border-amber-200";
+  }
 
   return (
-    <div className="glass p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
-          Overall Injury Risk
-        </span>
-        <span className="text-[10px] text-slate-600">
-          {updatedAgo ?? "Live"}
+    <div className="clinical-card p-5 space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-center gap-2">
+          <ShieldAlert size={18} className="text-blue-600" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Athlete Risk Status
+          </h2>
+        </div>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${bgTint}`}>
+          {level} RISK
         </span>
       </div>
 
-      <div className="flex items-center gap-6">
-        {/* Gauge */}
-        <div className="relative shrink-0">
-          <svg width="140" height="110" viewBox="0 0 140 110">
-            {/* Track */}
-            <path d={arcPath(-210, 30)} fill="none"
-              stroke="rgba(255,255,255,0.06)" strokeWidth="8"
-              strokeLinecap="round" />
-            {/* Fill */}
-            <path d={arcPath(-210, startAngle + (score / 100) * totalAngle)}
-              fill="none" stroke={stroke} strokeWidth="8"
+      <div className="flex items-center justify-center py-2">
+        <div className="relative flex flex-col items-center justify-center">
+          <svg className="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#f1f5f9" strokeWidth="10" />
+            <circle
+              cx="60" cy="60" r="48" fill="none"
+              stroke={color} strokeWidth="10"
+              strokeDasharray={301.6}
+              strokeDashoffset={301.6 - (301.6 * normalized) / 100}
               strokeLinecap="round"
-              style={{ transition: "all 0.8s ease" }} />
-            {/* Score */}
-            <text x={cx} y={cy + 6} textAnchor="middle"
-              className="font-bold" fontSize="22"
-              fill="white">{Math.round(score)}</text>
-            <text x={cx} y={cy + 22} textAnchor="middle"
-              fontSize="9" fill="#94a3b8">RISK SCORE</text>
+              className="transition-all duration-700 ease-out"
+            />
           </svg>
-        </div>
-
-        {/* Level + breakdown */}
-        <div className="flex-1 space-y-3">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${bg}`}>
-            <span className={`w-2 h-2 rounded-full ${stroke === "#ef4444" ? "bg-red-400" : stroke === "#f59e0b" ? "bg-yellow-400" : "bg-green-400"}`} />
-            <span className={`font-bold text-sm ${text}`}>{level}</span>
+          <div className="absolute flex flex-col items-center">
+            <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              {normalized.toFixed(1)}%
+            </span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Composite Risk
+            </span>
           </div>
-          <RiskBar label="Movement" value={movementRisk} color="#3b82f6" />
-          <RiskBar label="Sensor"   value={sensorRisk}   color="#8b5cf6" />
-          <RiskBar label="Vision"   value={visionRisk}   color="#06b6d4" />
         </div>
       </div>
 
-      <p className="text-[10px] text-slate-600 border-t pt-2"
-         style={{ borderColor: "var(--border)" }}>
-        ⚠ Elevated risk indicators — not a medical diagnosis. Consider professional assessment.
-      </p>
+      <div className="space-y-2.5 pt-1">
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-medium">
+            <span className="text-slate-600">Movement Model</span>
+            <span className="text-slate-900 font-bold">{(movementRisk * 100).toFixed(1)}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full rounded-full bg-blue-600" style={{ width: `${movementRisk * 100}%` }} />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-medium">
+            <span className="text-slate-600">Physiological Sensor</span>
+            <span className="text-slate-900 font-bold">{(sensorRisk * 100).toFixed(1)}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full rounded-full bg-purple-600" style={{ width: `${sensorRisk * 100}%` }} />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-medium">
+            <span className="text-slate-600">Self-Assessment Intake</span>
+            <span className="text-slate-900 font-bold">{(selfAssessmentRisk * 100).toFixed(1)}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full rounded-full bg-teal-600" style={{ width: `${selfAssessmentRisk * 100}%` }} />
+          </div>
+        </div>
+
+        {mriRisk !== null && mriRisk !== undefined && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs font-medium">
+              <span className="text-slate-600">MRI Structural Signal</span>
+              <span className="text-slate-900 font-bold">{(mriRisk * 100).toFixed(1)}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-full rounded-full bg-rose-600" style={{ width: `${mriRisk * 100}%` }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span className="flex items-center gap-1 font-medium">
+          <TrendingUp size={14} className="text-slate-400" />
+          Trend Trajectory:
+        </span>
+        <span className="font-bold text-slate-800">{trend}</span>
+      </div>
     </div>
   );
 }

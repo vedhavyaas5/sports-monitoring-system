@@ -1,0 +1,58 @@
+[
+    {
+        "id": "ALT-SUDDEN-SPIKE",
+        "name": "Sudden Risk Spike",
+        "severity": "HIGH PRIORITY",
+        "condition": "delta_risk >= 0.25 in 3 sessions",
+        "description": "Rapid escalation in computed risk indicator."
+    },
+    {
+        "id": "ALT-PERSIST-HIGH",
+        "name": "Persistent Elevated Risk",
+        "severity": "HIGH PRIORITY",
+        "condition": "risk >= 0.70 for >= 3 consecutive frames",
+        "description": "Continuous sustained high risk state."
+    },
+    {
+        "id": "ALT-SEVERE-PAIN",
+        "name": "High Pain Level Reported",
+        "severity": "HIGH PRIORITY",
+        "condition": "self_assessment.pain_level >= 7",
+        "description": "Athlete self-reported severe subjective pain."
+    },
+    {
+        "id": "ALT-HIGH-FATIGUE",
+        "name": "Critical Fatigue Detected",
+        "severity": "WARNING",
+        "condition": "fatigue_level >= 0.80 or sensor_fatigue_index >= 0.80",
+        "description": "Significant physiological or subjective fatigue."
+    },
+    {
+        "id": "ALT-ABNORMAL-KIN",
+        "name": "Abnormal Movement Biomechanics",
+        "severity": "WARNING",
+        "condition": "biomechanical_deviation_score >= 0.65 or movement_asymmetry >= 22.0",
+        "description": "Substantial divergence from typical movement mechanics."
+    },
+    {
+        "id": "ALT-PHYSIO-STRESS",
+        "name": "Elevated Physiological Stress",
+        "severity": "WARNING",
+        "condition": "heart_rate_bpm > 175 and spo2 < 93.0",
+        "description": "Cardiovascular and respiratory strain threshold reached."
+    },
+    {
+        "id": "ALT-HIGH-LOAD",
+        "name": "Excessive Training Load",
+        "severity": "INFO",
+        "condition": "training_load >= 380",
+        "description": "Cumulative training workload exceeds baseline tolerance."
+    },
+    {
+        "id": "ALT-POOR-RECOVERY",
+        "name": "Insufficient Recovery Indicators",
+        "severity": "INFO",
+        "condition": "recovery_index <= 0.30 and hydration_level < 0.40",
+        "description": "Hydration and recovery metrics suggest inadequate rest between bouts."
+    }
+]

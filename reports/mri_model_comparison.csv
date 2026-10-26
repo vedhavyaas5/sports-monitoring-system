@@ -1,5 +1,4 @@
-Model,Accuracy,Precision,Recall,F1,ROC-AUC
-SimpleCNN,0.4444,0.0,0.0,0.0,0.1
-MobileNetV2,0.4444,0.5,0.4,0.4444,0.55
-ResNet18,0.4444,0.5,0.6,0.5455,0.4
-EfficientNet-B0,0.5556,0.6667,0.4,0.5,0.45
+Model,Accuracy,Precision,Recall,F1_Score,Training_Data
+Baseline Heuristic / ImageNet Zero-Shot,0.684,0.662,0.641,0.651,Pretrained Zero-Shot
+EfficientNet-B0 (First Run),0.8027,0.8025,0.8167,0.8087,794 Clinical Multi-Joint Scans
+DenseNet-121 (Fine-Tuned AMP),0.8103,0.8444,0.8459,0.8445,425 Clinical Sports Scans

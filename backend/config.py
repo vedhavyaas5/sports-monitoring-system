@@ -1,16 +1,25 @@
 """
 =============================================================================
- PHASE 10 — Backend Configuration
- All thresholds and weights are centralised here.
- Change values here only — never hardcode in route files.
+ PHASE 10 & PHASE 17 — Backend Configuration
+ All thresholds, weights, and Gemini Copilot parameters are centralised here.
 =============================================================================
 """
 import os
 
+from dotenv import load_dotenv
+
 BASE_DIR   = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 LOGS_DIR   = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOGS_DIR, exist_ok=True)
+
+# ── Gemini AI Copilot Configuration ───────────────────────────────────────────
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GEMINI_TEMPERATURE = float(os.environ.get("GEMINI_TEMPERATURE", "0.2"))
+GEMINI_MAX_OUTPUT_TOKENS = int(os.environ.get("GEMINI_MAX_OUTPUT_TOKENS", "2048"))
 
 # ── Risk thresholds (application-level — NOT clinically validated) ────────────
 RISK_LOW_MAX      = 40   # overall_risk_pct < 40  → LOW

@@ -1,0 +1,20 @@
+{
+    "fusion_method": "weighted_average",
+    "weights": {
+        "movement_weight": 0.3,
+        "sensor_weight": 0.25,
+        "self_assessment_weight": 0.2,
+        "mri_weight": 0.15,
+        "trend_weight": 0.1
+    },
+    "dynamic_weight_adjustment": true,
+    "mri_fallback_redistribution": {
+        "movement_weight": 0.35,
+        "sensor_weight": 0.3,
+        "self_assessment_weight": 0.25,
+        "trend_weight": 0.1
+    },
+    "single_indicator_escalation_threshold": 0.85,
+    "ema_alpha": 0.3,
+    "disclaimer": "These fusion weights are application-level engineering parameters designed for multi-factor monitoring and have not been clinically validated."
+}
